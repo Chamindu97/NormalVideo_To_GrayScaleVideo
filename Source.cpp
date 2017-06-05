@@ -4,29 +4,64 @@
 
 using namespace std;
 using namespace cv; 
-/*int main(int argc, char** argv)
+int main(int argc, char** argv)
 {
-	string filename = "fukuoka.avi"; 
+	string filename = "sec.avi"; 
 	VideoCapture capture(filename);
 	Mat frame;
-
+	Mat output;
+	int i = 0;
 	if (!capture.isOpened()){
 
 		cout << "Error when reading steam_avi" << endl;;
 
 	}
 	namedWindow("w", 1);
+
+	double dWidth = capture.get(CV_CAP_PROP_FRAME_WIDTH); //get the width of frames of the video
+	double dHeight = capture.get(CV_CAP_PROP_FRAME_HEIGHT); //get the height of frames of the video
+
+	cout << "Frame Size = " << dWidth << "x" << dHeight << endl;
+
+	Size frameSize(static_cast<int>(dWidth), static_cast<int>(dHeight));
+
+	VideoWriter outputVideo("ouput.avi", CV_FOURCC('I', '4', '2', '0'),
+		32, frameSize, true);
+	if (!outputVideo.isOpened())
+	{
+		cout << "동영상을 저장하기 위한 초기화 작업 중 에러 발생" << endl;
+		return 1;
+	} 
 	for (;;)
 	{
-		capture >> frame;
-		if (frame.empty())
+		Mat output;
+		if (!capture.read(frame)){
+			cout << "end";
 			break;
-		imshow("w", frame);
+		}
+		//imshow("w", frame);
+		cuda::GpuMat input_gpu_image, output_gpu_image;
+
+		input_gpu_image.upload(frame);
+
+		cuda::cvtColor(input_gpu_image, output_gpu_image, CV_BGR2GRAY);
+		  
+		output_gpu_image.download(output);
+
+		cv::imshow("Input", frame);
+		cv::imshow("Output", output);
+		cout << i++ << endl;
+		outputVideo << output;
+		//imshow("car.jpg", output);
+
+		//imwrite("../images/GrayImage.jpg", output);
 		waitKey(20); // waits to display frame
-	}
-	waitKey(0); // key press to close window
+	} 
+	capture.release();
+	//waitKey(0); // key press to close window
 	// releases and window destroy are automatic in C++ interface
-}*/
+	return 0;
+}
 /*
 #include <opencv2/opencv.hpp>
 //#include <opencv2/highgui/highgui_c.h>
@@ -48,7 +83,7 @@ int main(){
 	imwrite("out.png", dst);
 	return 0;
 }*/
-
+/*
 int main(int argc, char** argv)
 {
 	// argv[1] - whaere the image is located 
@@ -95,3 +130,4 @@ int main(int argc, char** argv)
 	return 0;
 }
 
+*/
